@@ -3,6 +3,10 @@
 //   {stat}_YYYY (stat in {min, med, mdn, max}) e COD_TIPO_S per ogni feature.
 // - Layer stack: basemap OSM/Positron/Satellite -> tematizzazione COD_TIPO_S
 //   (macro-aree, opaca) -> tematizzazione LST (semi-trasparente).
+//
+// Ottimizzazione: quando cambia solo lo stile (statistica/anno/palette/opacita'/classi)
+// aggiorno con setStyle() senza ricostruire il layer. Ricostruzione totale solo
+// al cambio comune o toggle tipologia.
 
 const PALETTES = {
   giallorosso: ['#ffffcc', '#fee187', '#fdae61', '#f46d43', '#a50026'],
@@ -28,11 +32,6 @@ const ORDINE_REGIONI = [
   "Campania", "Puglia", "Basilicata", "Calabria", "Sicilia", "Sardegna"
 ];
 
-// Aggregazione COD_TIPO_S -> 8 macro-classi (id, nome, colore).
-// Le macro-classi sono ordinate secondo un gradiente attesto di
-// impermeabilita'/temperatura (piu' impervious -> piu' caldo, in cima).
-// Ogni sezione appartiene esattamente a una macro; il codice 0 (non mappato)
-// e i codici non presenti vengono raccolti nella macro 8 (Altro).
 const TIPO_S_MACRO = [
   { id: 1, nome: 'Residenziale denso',        colore: '#c0392b' },
   { id: 2, nome: 'Produttivo/infrastrutture', colore: '#7f0000' },
@@ -44,7 +43,6 @@ const TIPO_S_MACRO = [
   { id: 8, nome: 'Altro/residuali',           colore: '#9e9e9e' },
 ];
 
-// Lookup COD_TIPO_S -> id_macro
 const TIPO_S_TO_MACRO = {
   1:1,
   6:2, 7:2, 10:2, 12:2, 21:2, 30:2, 32:2, 33:2, 34:2, 36:2, 55:2,
@@ -56,7 +54,6 @@ const TIPO_S_TO_MACRO = {
   19:8, 20:8, 27:8, 99:8, 100:8,
 };
 
-// Etichetta descrittiva per singolo codice (per il tooltip del layer tipologia)
 const COD_TIPO_S_LABEL = {
   1: 'Residenziale', 2: 'Culto', 3: 'Monumento/palazzo storico', 4: 'Piazza monumentale',
   5: 'Area verde/parco urbano', 6: 'Porto', 7: 'Aeroporto', 8: 'Caserma',
@@ -97,6 +94,13 @@ const state = {
   tipoSLayer: null,
   map: null,
   tileLayer: null,
+  currentComuneCode: null,   // per capire quando cambia il comune
+  currentTipoSVisible: null, // per capire quando cambia il toggle
+  currentEntry: null,
+  currentGeojson: null,
+  currentBreaks: null,
+  currentColors: null,
+  currentField: null,
 };
 const el = (id) => document.getElementById(id);
 const loading = (on) => { const l = el('loading'); if (l) l.style.display = on ? 'block' : 'none'; };
@@ -213,11 +217,11 @@ function currentYear() { return parseInt(el('yearSlider').value, 10); }
 function currentFieldKey() { return `${currentStat()}_${currentYear()}`; }
 function currentOpacity() { return parseInt(el('opacitySlider').value, 10) / 100; }
 
-function styleFeatureLST(feature, breaks, colors, field) {
-  const v = feature.properties[field];
+function styleFeatureLST(feature) {
+  const v = feature.properties[state.currentField];
   const op = currentOpacity();
   return {
-    fillColor: v == null ? '#eeeeee' : colorForValue(v, breaks, colors),
+    fillColor: v == null ? '#eeeeee' : colorForValue(v, state.currentBreaks, state.currentColors),
     fillOpacity: v == null ? 0 : op,
     color: '#666',
     weight: 0.15,
@@ -234,13 +238,13 @@ function styleFeatureTipoS(feature) {
   };
 }
 
-function renderLegend(breaks, colors, field) {
+function renderLegend() {
   const box = el('legend');
-  const swatches = colors.map(c => `<div class="swatch" style="background:${c}"></div>`).join('');
-  const labels = breaks.map(b => Math.round(b * 10) / 10).join('&nbsp;&nbsp;');
+  const swatches = state.currentColors.map(c => `<div class="swatch" style="background:${c}"></div>`).join('');
+  const labels = state.currentBreaks.map(b => Math.round(b * 10) / 10).join('&nbsp;&nbsp;');
   const statLabel = STAT_LABEL[currentStat()];
   const y = currentYear();
-  const yLabel = YEARS_PARZIALI.has(y) ? `${y} <em>parziale</em>` : `${y}`;
+  const yLabel = YEARS_PARZIALI.has(y) ? `<em>${y}*</em>` : `${y}`;
 
   let macroBlock = '';
   if (el('tipoSToggle').checked) {
@@ -257,7 +261,13 @@ function renderLegend(breaks, colors, field) {
     macroBlock;
 }
 
-function renderInfoPanel(entry, geojson, field, values) {
+function renderInfoPanel() {
+  const entry = state.currentEntry;
+  const geojson = state.currentGeojson;
+  const field = state.currentField;
+  const values = geojson.features.map(f => f.properties[field]).filter(v => v != null);
+  if (values.length === 0) return;
+
   const dl = el('infoPanel');
   const min = Math.min(...values), max = Math.max(...values);
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
@@ -265,7 +275,7 @@ function renderInfoPanel(entry, geojson, field, values) {
   const median = sorted[Math.floor(sorted.length / 2)];
   const statLabel = STAT_LABEL[currentStat()];
   const y = currentYear();
-  const yTag = YEARS_PARZIALI.has(y) ? ` <em>(parziale)</em>` : '';
+  const yTag = YEARS_PARZIALI.has(y) ? `<em>*</em>` : '';
   dl.innerHTML = `
     <dt>Comune</dt><dd>${entry.name}</dd>
     <dt>Codice</dt><dd>${entry.code}</dd>
@@ -282,7 +292,8 @@ function renderInfoPanel(entry, geojson, field, values) {
     '<tr><td style="color:var(--muted);font-style:italic;padding:8px 4px;">Clicca una sezione sulla mappa per vedere i dettagli</td></tr>';
 }
 
-function renderSectionInfo(feature, entry) {
+function renderSectionInfo(feature) {
+  const entry = state.currentEntry;
   const p = feature.properties;
   const stat = currentStat();
   const statLabel = STAT_LABEL[stat];
@@ -296,7 +307,8 @@ function renderSectionInfo(feature, entry) {
     const key = `${stat}_${y}`;
     const val = p[key];
     const cls = YEARS_PARZIALI.has(y) ? ' class="parziale"' : '';
-    return `<tr${cls}><td>${y}</td><td>${val == null ? 'n/d' : val + ' °C'}</td></tr>`;
+    const yLabel = YEARS_PARZIALI.has(y) ? `<em>${y}*</em>` : y;
+    return `<tr${cls}><td>${yLabel}</td><td>${val == null ? 'n/d' : val + ' °C'}</td></tr>`;
   }).join('');
 
   const table = el('dataTable');
@@ -324,40 +336,35 @@ function setBasemap(key) {
   const b = BASEMAPS[key];
   if (!b) return;
   state.tileLayer = L.tileLayer(b.url, { attribution: b.attr, subdomains: 'abc', maxZoom: 19 }).addTo(state.map);
+  // Assicura l'ordine di sovrapposizione dopo il cambio basemap
+  ensureLayerOrder();
+}
+
+function ensureLayerOrder() {
+  // basemap in fondo, poi tipologia sezione, poi LST in cima
   if (state.tileLayer && state.tileLayer.bringToBack) state.tileLayer.bringToBack();
+  if (state.tipoSLayer && state.tipoSLayer.bringToFront) state.tipoSLayer.bringToFront();
+  if (state.lstLayer && state.lstLayer.bringToFront) state.lstLayer.bringToFront();
 }
 
 function updateYearDisplay() {
   const y = currentYear();
   const yv = el('yearVal');
-  yv.textContent = y;
+  yv.textContent = YEARS_PARZIALI.has(y) ? `${y}*` : `${y}`;
   yv.classList.toggle('parziale', YEARS_PARZIALI.has(y));
-  const note = el('yearNote');
-  if (YEARS_PARZIALI.has(y)) {
-    const oggi = new Date().toLocaleDateString('it-IT',
-      { day: '2-digit', month: 'long', year: 'numeric' });
-    el('yearNoteDate').textContent = oggi;
-    note.classList.add('visible');
-  } else {
-    note.classList.remove('visible');
-  }
 }
 
 function updateOpacityLabel() {
   el('opacityVal').textContent = `${el('opacitySlider').value}%`;
 }
 
-async function refresh() {
-  const entry = state.manifest.comuni.find(c => c.code === el('comuneSelect').value);
-  if (!entry) return;
-  const geojson = await loadComune(entry);
-  const field = currentFieldKey();
+function computeCurrentStyleParams() {
+  const entry = state.currentEntry;
+  const geojson = state.currentGeojson;
   const stat = currentStat();
+  state.currentField = currentFieldKey();
 
-  const values = geojson.features.map(f => f.properties[field]).filter(v => v != null);
-  if (values.length === 0) { console.warn(`Nessun valore per ${field}`); return; }
-
-  // Break FISSI su tutti gli anni del comune per la statistica corrente
+  // Break FISSI su tutti gli anni per la statistica corrente (stabilita' della legenda)
   const yearFields = entry.years.map(y => `${stat}_${y}`);
   const allYearsValues = [];
   for (const f of geojson.features) {
@@ -368,39 +375,73 @@ async function refresh() {
   }
   const k = parseInt(el('numClasses').value, 10);
   const method = el('classSelect').value;
-  const breaks = computeBreaks(allYearsValues, method, k);
-  const colors = rampColors(PALETTES[el('paletteSelect').value], breaks.length - 1);
+  state.currentBreaks = computeBreaks(allYearsValues, method, k);
+  state.currentColors = rampColors(PALETTES[el('paletteSelect').value], state.currentBreaks.length - 1);
+}
 
-  // Rimuove i layer precedenti
-  if (state.lstLayer) { state.map.removeLayer(state.lstLayer); state.lstLayer = null; }
-  if (state.tipoSLayer) { state.map.removeLayer(state.tipoSLayer); state.tipoSLayer = null; }
+async function refresh(reason) {
+  // reason: 'comune' (ricostruzione totale), 'toggle' (idem), 'style' (solo setStyle)
+  const entry = state.manifest.comuni.find(c => c.code === el('comuneSelect').value);
+  if (!entry) return;
 
-  // Layer tipologia sezione (sotto la LST)
-  if (el('tipoSToggle').checked) {
-    state.tipoSLayer = L.geoJSON(geojson, {
-      renderer: L.canvas(),
-      style: styleFeatureTipoS,
-      interactive: false,
-    }).addTo(state.map);
+  const comuneChanged = state.currentComuneCode !== entry.code;
+  const tipoSVisible = el('tipoSToggle').checked;
+  const tipoSChanged = state.currentTipoSVisible !== tipoSVisible;
+
+  // Se cambia il comune, ricarico i dati
+  if (comuneChanged) {
+    state.currentEntry = entry;
+    state.currentGeojson = await loadComune(entry);
+    state.currentComuneCode = entry.code;
   }
 
-  // Layer LST (sopra)
-  state.lstLayer = L.geoJSON(geojson, {
-    renderer: L.canvas(),
-    style: (f) => styleFeatureLST(f, breaks, colors, field),
-    onEachFeature: (f, layer) => {
-      const v = f.properties[field];
-      const vLabel = v == null ? 'n/d' : `${v} °C`;
-      const cod = f.properties.COD_TIPO_S;
-      const codShort = cod == null || cod === '' ? '' :
-        ` \u00b7 ${COD_TIPO_S_LABEL[Number(cod)] ?? 'tipo ' + cod}`;
-      layer.bindTooltip(`Sezione ${f.properties.SEZ21_ID ?? ''}${codShort}<br>${vLabel}`, { sticky: true });
-      layer.on('click', () => renderSectionInfo(f, entry));
-    },
-  }).addTo(state.map);
+  computeCurrentStyleParams();
 
-  renderLegend(breaks, colors, field);
-  renderInfoPanel(entry, geojson, field, values);
+  const needRebuild = comuneChanged || tipoSChanged
+    || !state.lstLayer
+    || reason === 'rebuild';
+
+  if (needRebuild) {
+    // --- Ricostruzione totale (comune nuovo, toggle cambiato o primo render) ---
+    if (state.lstLayer) { state.map.removeLayer(state.lstLayer); state.lstLayer = null; }
+    if (state.tipoSLayer) { state.map.removeLayer(state.tipoSLayer); state.tipoSLayer = null; }
+
+    if (tipoSVisible) {
+      state.tipoSLayer = L.geoJSON(state.currentGeojson, {
+        renderer: L.canvas(),
+        style: styleFeatureTipoS,
+        interactive: false,
+      }).addTo(state.map);
+    }
+
+    state.lstLayer = L.geoJSON(state.currentGeojson, {
+      renderer: L.canvas(),
+      style: styleFeatureLST,
+      onEachFeature: (f, layer) => {
+        layer.bindTooltip('', { sticky: true });
+        layer.on('mouseover', () => {
+          const v = f.properties[state.currentField];
+          const vLabel = v == null ? 'n/d' : `${v} °C`;
+          const cod = f.properties.COD_TIPO_S;
+          const codShort = cod == null || cod === '' ? '' :
+            ` \u00b7 ${COD_TIPO_S_LABEL[Number(cod)] ?? 'tipo ' + cod}`;
+          layer.setTooltipContent(`Sezione ${f.properties.SEZ21_ID ?? ''}${codShort}<br>${vLabel}`);
+        });
+        layer.on('click', () => renderSectionInfo(f));
+      },
+    }).addTo(state.map);
+
+    state.currentTipoSVisible = tipoSVisible;
+    ensureLayerOrder();
+  } else {
+    // --- Fast path: solo restyle in-place ---
+    if (state.lstLayer) state.lstLayer.setStyle(styleFeatureLST);
+    // il layer tipologia non cambia stile con anno/statistica/palette
+    ensureLayerOrder();
+  }
+
+  renderLegend();
+  renderInfoPanel();
 }
 
 // ---------- wiring ----------
@@ -445,12 +486,16 @@ function populateYearSlider(entry) {
 async function onComuneChange() {
   const entry = state.manifest.comuni.find(c => c.code === el('comuneSelect').value);
   populateYearSlider(entry);
-  await refresh();
+  await refresh('rebuild');
   try { state.map.fitBounds(state.lstLayer.getBounds(), { padding: [20, 20] }); } catch (e) {}
 }
 
 async function init() {
-  state.map = L.map('map', { renderer: L.canvas() }).setView([43.6, 13.5], 12);
+  state.map = L.map('map', {
+    renderer: L.canvas(),
+    preferCanvas: true,
+  }).setView([43.6, 13.5], 12);
+
   setBasemap('osm');
   await loadManifest();
   populateComuneSelect();
@@ -459,13 +504,16 @@ async function init() {
   await onComuneChange();
 
   el('comuneSelect').addEventListener('change', onComuneChange);
-  el('statSelect').addEventListener('change', refresh);
-  el('classSelect').addEventListener('change', refresh);
-  el('paletteSelect').addEventListener('change', refresh);
-  el('numClasses').addEventListener('input', () => { el('numClassesVal').textContent = el('numClasses').value; refresh(); });
-  el('yearSlider').addEventListener('input', () => { updateYearDisplay(); refresh(); });
-  el('opacitySlider').addEventListener('input', () => { updateOpacityLabel(); refresh(); });
-  el('tipoSToggle').addEventListener('change', refresh);
+  el('statSelect').addEventListener('change', () => refresh('style'));
+  el('classSelect').addEventListener('change', () => refresh('style'));
+  el('paletteSelect').addEventListener('change', () => refresh('style'));
+  el('numClasses').addEventListener('input', () => {
+    el('numClassesVal').textContent = el('numClasses').value;
+    refresh('style');
+  });
+  el('yearSlider').addEventListener('input', () => { updateYearDisplay(); refresh('style'); });
+  el('opacitySlider').addEventListener('input', () => { updateOpacityLabel(); refresh('style'); });
+  el('tipoSToggle').addEventListener('change', () => refresh('rebuild'));
   el('basemapSelect').addEventListener('change', () => setBasemap(el('basemapSelect').value));
 }
 init();
