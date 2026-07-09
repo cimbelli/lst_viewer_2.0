@@ -1,0 +1,53 @@
+COD_TIPO_S,id_macro,nome_macro,colore,razionale
+1,1,Tessuto urbano continuo,#c0392b,"Residenziale denso: superfici impervie 60-80%, calore antropogenico, ombra edifici."
+12,2,Superficie impervia pesante,#7f0000,"Industriale, logistico, commerciale: grandi tetti + piazzali (max UHI - ma artefatto emissivita)."
+34,2,Superficie impervia pesante,#7f0000,"Industriale, logistico, commerciale: grandi tetti + piazzali (max UHI - ma artefatto emissivita)."
+55,2,Superficie impervia pesante,#7f0000,"Industriale, logistico, commerciale: grandi tetti + piazzali (max UHI - ma artefatto emissivita)."
+6,3,Rete infrastrutturale,#212121,"Asfalto, binari, piste. Sezioni allungate, spesso con verde di margine (diluisce il segnale)."
+7,3,Rete infrastrutturale,#212121,"Asfalto, binari, piste. Sezioni allungate, spesso con verde di margine (diluisce il segnale)."
+10,3,Rete infrastrutturale,#212121,"Asfalto, binari, piste. Sezioni allungate, spesso con verde di margine (diluisce il segnale)."
+36,3,Rete infrastrutturale,#212121,"Asfalto, binari, piste. Sezioni allungate, spesso con verde di margine (diluisce il segnale)."
+21,4,Superficie minerale nuda,#8b7355,"Cave, calanchi, cantieri, incolto secco. Alta LST estiva, low water content."
+28,4,Superficie minerale nuda,#8b7355,"Cave, calanchi, cantieri, incolto secco. Alta LST estiva, low water content."
+79,4,Superficie minerale nuda,#8b7355,"Cave, calanchi, cantieri, incolto secco. Alta LST estiva, low water content."
+2,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+3,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+4,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+8,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+9,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+15,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+18,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+24,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+25,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+29,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+30,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+31,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+32,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+33,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+35,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+37,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+50,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+53,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+60,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+78,5,Edifici pubblici e servizi,#e08a5b,Mix costruito+piazzali+giardini. Ampia variabilita interna (limite noto).
+16,6,Impianti sportivi,#c39bd3,Prati manutenuti e irrigui + piccole strutture. Cool spot atteso.
+5,7,Verde urbano,#27ae60,"Parchi, alberature urbane. Cooling forte da ombra + evapotraspirazione."
+22,8,Vegetazione naturale,#0f6b3d,"Bosco (22) e cespuglieto (69). Il bosco raffredda, il cespuglieto meno; entita nazionale attesa."
+69,8,Vegetazione naturale,#0f6b3d,"Bosco (22) e cespuglieto (69). Il bosco raffredda, il cespuglieto meno; entita nazionale attesa."
+26,9,Colture agricole,#f4d35e,"Cool spot in pianura irrigua estiva, warm spot su seminativi mietuti a Sud."
+61,9,Colture agricole,#f4d35e,"Cool spot in pianura irrigua estiva, warm spot su seminativi mietuti a Sud."
+62,9,Colture agricole,#f4d35e,"Cool spot in pianura irrigua estiva, warm spot su seminativi mietuti a Sud."
+63,9,Colture agricole,#f4d35e,"Cool spot in pianura irrigua estiva, warm spot su seminativi mietuti a Sud."
+64,9,Colture agricole,#f4d35e,"Cool spot in pianura irrigua estiva, warm spot su seminativi mietuti a Sud."
+65,9,Colture agricole,#f4d35e,"Cool spot in pianura irrigua estiva, warm spot su seminativi mietuti a Sud."
+66,9,Colture agricole,#f4d35e,"Cool spot in pianura irrigua estiva, warm spot su seminativi mietuti a Sud."
+68,9,Colture agricole,#f4d35e,"Cool spot in pianura irrigua estiva, warm spot su seminativi mietuti a Sud."
+81,9,Colture agricole,#f4d35e,"Cool spot in pianura irrigua estiva, warm spot su seminativi mietuti a Sud."
+23,10,Acqua e zone umide,#2166ac,Superficie riflettente + inerzia termica. Cool spot piu forte se acqua dominante nella sezione.
+56,10,Acqua e zone umide,#2166ac,Superficie riflettente + inerzia termica. Cool spot piu forte se acqua dominante nella sezione.
+80,10,Acqua e zone umide,#2166ac,Superficie riflettente + inerzia termica. Cool spot piu forte se acqua dominante nella sezione.
+19,0,Escluso (residuale),#cccccc,Codici marginali o non interpretabili termicamente.
+20,0,Escluso (residuale),#cccccc,Codici marginali o non interpretabili termicamente.
+27,0,Escluso (residuale),#cccccc,Codici marginali o non interpretabili termicamente.
+99,0,Escluso (residuale),#cccccc,Codici marginali o non interpretabili termicamente.
+100,0,Escluso (residuale),#cccccc,Codici marginali o non interpretabili termicamente.

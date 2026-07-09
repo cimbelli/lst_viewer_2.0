@@ -52,6 +52,15 @@
   aside.info tr.parziale td, aside.info tr.parziale th{font-style:italic;color:var(--muted);}
   #loading{position:absolute;top:16px;right:16px;background:#fff;padding:6px 12px;border-radius:6px;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.15);z-index:600;display:none;}
 
+  /* Pulsanti download */
+  .downloads{margin-top:14px;display:flex;flex-direction:column;gap:6px;}
+  .downloads a{display:flex;align-items:center;gap:6px;padding:7px 10px;
+    border:1px solid var(--line);border-radius:6px;background:#fff;
+    color:var(--ink);text-decoration:none;font-size:12px;transition:all .15s;}
+  .downloads a:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .downloads a[aria-disabled="true"]{opacity:.5;pointer-events:none;font-style:italic;}
+  .downloads .icon{font-size:14px;line-height:1;}
+
   footer{grid-column:1/4;padding:10px 24px;border-top:1px solid var(--line);background:var(--panel);font-size:11px;color:var(--muted);line-height:1.5;}
   footer .footnote{font-style:italic;}
 
@@ -142,9 +151,18 @@
       </select>
     </div>
 
+    <div class="downloads">
+      <a id="dlPdf" href="#" target="_blank" rel="noopener" aria-disabled="true">
+        <span class="icon">📄</span><span>Report PDF del comune</span>
+      </a>
+      <a id="dlCsv" href="#" target="_blank" rel="noopener" aria-disabled="true">
+        <span class="icon">📊</span><span>Sezioni CSV del comune</span>
+      </a>
+    </div>
+
 	<div class="info-box">
 	  <strong>Dati e metodologia</strong>
-	  Land Surface Temperature derivata dalle immagini estive Landsat 8 e 9 (<a href="https://www.usgs.gov/landsat-missions/landsat-science-products" target="_blank" rel="noopener">Collection 2, Tier 1, Level 2</a>) con Google Earth Engine: mediana pixel-per-pixel su tutte le acquisizioni estive di ciascun anno, poi aggregazione per sezione di censimento (min, media, mediana, max). Le sezioni sono raggruppate per copertura in 8 macro-classi orientate a evidenziare i driver termici del suolo (impervious vs verde vs acqua). <a href="https://www.istat.it/notizia/basi-territoriali-e-variabili-censuarie/" target="_blank" rel="noopener">Geometrie</a> e attributi (POP21, COD_TIPO_S) da Istat, Basi territoriali 2021.
+	  Land Surface Temperature derivata dalle immagini estive Landsat 8 e 9 (<a href="https://www.usgs.gov/landsat-missions/landsat-science-products" target="_blank" rel="noopener">Collection 2, Tier 1, Level 2</a>) con Google Earth Engine: mediana pixel-per-pixel su tutte le acquisizioni estive di ciascun anno, poi aggregazione per sezione di censimento (min, media, mediana, max). Le sezioni sono raggruppate per copertura in 10 macro-classi orientate ai driver termici (impervious, evapotraspirazione, water content). <a href="https://www.istat.it/notizia/basi-territoriali-e-variabili-censuarie/" target="_blank" rel="noopener">Geometrie</a> e attributi (POP21, COD_TIPO_S, SHAPE_AREA) da Istat, Basi territoriali 2021.
 	</div>
   </aside>
 

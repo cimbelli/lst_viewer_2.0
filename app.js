@@ -1,11 +1,8 @@
-// Mappa interattiva LST - vanilla JS, statico.
+// Mappa interattiva LST v3 - vanilla JS, statico.
 // - manifest.json elenca i comuni (con `regione`); ogni TopoJSON ha i valori
-//   {stat}_YYYY (stat in {min, med, mdn, max}) e COD_TIPO_S per ogni feature.
-// - Layer stack: basemap OSM/Positron/Satellite -> tematizzazione COD_TIPO_S
-//   (macro-aree, opaca) -> tematizzazione LST (semi-trasparente).
-// - Selezione persistente: click su sezione la evidenzia col bordo nero;
-//   click su altra sezione sposta la selezione; click sulla stessa toglie
-//   la selezione; click sul basemap deseleziona.
+//   {stat}_YYYY (stat in {min, med, mdn, max}), COD_TIPO_S e SHAPE_AREA per ogni feature.
+// - Layer stack: basemap -> tematizzazione COD_TIPO_S (macro v3) -> LST semi-trasparente.
+// - Selezione persistente col bordo nero; pulsanti download PDF/CSV per comune.
 
 const PALETTES = {
   giallorosso: ['#ffffcc', '#fee187', '#fdae61', '#f46d43', '#a50026'],
@@ -31,26 +28,34 @@ const ORDINE_REGIONI = [
   "Campania", "Puglia", "Basilicata", "Calabria", "Sicilia", "Sardegna"
 ];
 
+// --- Tassonomia macro v3 (10 classi + escluso) ---
 const TIPO_S_MACRO = [
-  { id: 1, nome: 'Residenziale denso',        colore: '#c0392b' },
-  { id: 2, nome: 'Produttivo/infrastrutture', colore: '#7f0000' },
-  { id: 3, nome: 'Servizi e istituzioni',     colore: '#e08a5b' },
-  { id: 4, nome: 'Verde urbano',              colore: '#27ae60' },
-  { id: 5, nome: 'Agricolo',                  colore: '#f4d35e' },
-  { id: 6, nome: 'Vegetazione naturale',      colore: '#0f6b3d' },
-  { id: 7, nome: 'Acqua e zone umide',        colore: '#2166ac' },
-  { id: 8, nome: 'Altro/residuali',           colore: '#9e9e9e' },
+  { id: 1,  nome: 'Tessuto urbano continuo',    colore: '#c0392b' },
+  { id: 2,  nome: 'Superficie impervia pesante',colore: '#7f0000' },
+  { id: 3,  nome: 'Rete infrastrutturale',      colore: '#212121' },
+  { id: 4,  nome: 'Superficie minerale nuda',   colore: '#8b7355' },
+  { id: 5,  nome: 'Edifici pubblici e servizi', colore: '#e08a5b' },
+  { id: 6,  nome: 'Impianti sportivi',          colore: '#c39bd3' },
+  { id: 7,  nome: 'Verde urbano',               colore: '#27ae60' },
+  { id: 8,  nome: 'Vegetazione naturale',       colore: '#0f6b3d' },
+  { id: 9,  nome: 'Colture agricole',           colore: '#f4d35e' },
+  { id: 10, nome: 'Acqua e zone umide',         colore: '#2166ac' },
+  { id: 0,  nome: 'Escluso/residuale',          colore: '#cccccc' },
 ];
 
 const TIPO_S_TO_MACRO = {
-  1:1,
-  6:2, 7:2, 10:2, 12:2, 21:2, 30:2, 32:2, 33:2, 34:2, 36:2, 55:2,
-  2:3, 3:3, 4:3, 8:3, 9:3, 15:3, 16:3, 18:3, 24:3, 25:3, 29:3, 31:3, 35:3, 37:3, 50:3, 53:3, 60:3, 78:3,
-  5:4,
-  26:5, 61:5, 62:5, 63:5, 64:5, 65:5, 66:5, 68:5, 81:5,
-  22:6, 28:6, 69:6, 79:6,
-  23:7, 56:7, 80:7,
-  19:8, 20:8, 27:8, 99:8, 100:8,
+  1: 1,
+  12: 2, 34: 2, 55: 2,
+  6: 3, 7: 3, 10: 3, 36: 3,
+  21: 4, 28: 4, 79: 4,
+  2: 5, 3: 5, 4: 5, 8: 5, 9: 5, 15: 5, 18: 5, 24: 5, 25: 5, 29: 5,
+  30: 5, 31: 5, 32: 5, 33: 5, 35: 5, 37: 5, 50: 5, 53: 5, 60: 5, 78: 5,
+  16: 6,
+  5: 7,
+  22: 8, 69: 8,
+  26: 9, 61: 9, 62: 9, 63: 9, 64: 9, 65: 9, 66: 9, 68: 9, 81: 9,
+  23: 10, 56: 10, 80: 10,
+  19: 0, 20: 0, 27: 0, 99: 0, 100: 0,
 };
 
 const COD_TIPO_S_LABEL = {
@@ -72,13 +77,12 @@ const COD_TIPO_S_LABEL = {
   99: 'Altro', 100: 'Senza fissa dimora',
 };
 
-// Stile di selezione: bordo nero spesso, mantiene il fill LST sottostante
 const SELECTED_STYLE = { color: '#000', weight: 2.2, opacity: 1 };
 
 function macroForCodice(cod) {
-  if (cod == null || cod === '') return 8;
+  if (cod == null || cod === '') return 0;
   const n = Number(cod);
-  return TIPO_S_TO_MACRO[n] ?? 8;
+  return TIPO_S_TO_MACRO[n] ?? 0;
 }
 function coloreMacro(idMacro) {
   const m = TIPO_S_MACRO.find(m => m.id === idMacro);
@@ -87,6 +91,19 @@ function coloreMacro(idMacro) {
 function nomeMacro(idMacro) {
   const m = TIPO_S_MACRO.find(m => m.id === idMacro);
   return m ? m.nome : 'Sconosciuta';
+}
+
+// Sanitizza il nome comune per costruire i path dei download (deve corrispondere
+// alla funzione python sanitize_filename del notebook)
+function sanitizeName(name) {
+  return String(name)
+    .trim()
+    .replace(/'/g, '').replace(/\u2019/g, '')
+    .replace(/\//g, '-')
+    .replace(/[^A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF0-9._ -]+/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^[._\- ]+|[._\- ]+$/g, '') || 'Comune';
 }
 
 const state = {
@@ -103,8 +120,8 @@ const state = {
   currentBreaks: null,
   currentColors: null,
   currentField: null,
-  selectedLayer: null,   // riferimento al leaflet layer selezionato
-  selectedSez21: null,   // id della sezione selezionata (per persistenza tra rebuild)
+  selectedLayer: null,
+  selectedSez21: null,
 };
 const el = (id) => document.getElementById(id);
 const loading = (on) => { const l = el('loading'); if (l) l.style.display = on ? 'block' : 'none'; };
@@ -252,7 +269,8 @@ function renderLegend() {
 
   let macroBlock = '';
   if (el('tipoSToggle').checked) {
-    const rows = TIPO_S_MACRO.map(m =>
+    // Escludo la classe "0 - Escluso" dalla legenda visibile
+    const rows = TIPO_S_MACRO.filter(m => m.id !== 0).map(m =>
       `<div class="macro-row"><div class="macro-sw" style="background:${m.colore}"></div><span>${m.nome}</span></div>`
     ).join('');
     macroBlock = `<div class="macro-list"><div style="font-weight:600;font-size:10px;">Tipologia (Istat)</div>${rows}</div>`;
@@ -290,10 +308,7 @@ function renderInfoPanel() {
     <dt>Media (tra sezioni)</dt><dd>${mean.toFixed(2)} &deg;C</dd>
     <dt>Mediana (tra sezioni)</dt><dd>${median.toFixed(2)} &deg;C</dd>`;
 
-  // Se non c'e' selezione attiva mostra placeholder; altrimenti lascia i dettagli
-  if (state.selectedLayer == null) {
-    resetDataTable();
-  }
+  if (state.selectedLayer == null) resetDataTable();
 }
 
 function resetDataTable() {
@@ -314,6 +329,13 @@ function renderSectionInfo(feature) {
     : `${cod} \u2013 ${COD_TIPO_S_LABEL[Number(cod)] ?? 'sconosciuto'}`;
   const macroId = macroForCodice(cod);
 
+  // Area in ettari (SHAPE_AREA in m^2)
+  const area = p.SHAPE_AREA;
+  const areaLabel = area == null ? 'n/d'
+    : (Number(area) < 10000
+        ? `${Math.round(Number(area))} m²`
+        : `${(Number(area)/10000).toFixed(2)} ha`);
+
   const serieRows = entry.years.map(y => {
     const key = `${stat}_${y}`;
     const val = p[key];
@@ -327,6 +349,9 @@ function renderSectionInfo(feature) {
     <tr><th colspan="2" style="text-align:left;padding-top:12px;">
       Sezione ${p.SEZ21_ID ?? p.SEZ21 ?? ''}
     </th></tr>
+    <tr>
+      <th>Area</th><td>${areaLabel}</td>
+    </tr>
     <tr>
       <th>Popolazione (POP21)</th><td>${p.POP21 ?? 'n/d'}</td>
     </tr>
@@ -345,10 +370,9 @@ function renderSectionInfo(feature) {
 // ---------- selezione sezione ----------
 function clearSelection() {
   if (state.selectedLayer) {
-    // Ripristina lo stile LST normale sul layer precedentemente selezionato
     try {
       state.selectedLayer.setStyle(styleFeatureLST(state.selectedLayer.feature));
-    } catch (e) { /* layer potrebbe essere gia' distrutto */ }
+    } catch (e) { /* ignore */ }
   }
   state.selectedLayer = null;
   state.selectedSez21 = null;
@@ -357,23 +381,36 @@ function clearSelection() {
 
 function selectSection(layer, feature) {
   const sez = feature.properties.SEZ21 ?? feature.properties.SEZ21_ID;
-  // Toggle: se clicchi la stessa sezione, deseleziona
   if (state.selectedSez21 != null && state.selectedSez21 === sez) {
     clearSelection();
     return;
   }
-  // Se c'era una selezione diversa, ripristina il suo stile
   if (state.selectedLayer && state.selectedLayer !== layer) {
     try {
       state.selectedLayer.setStyle(styleFeatureLST(state.selectedLayer.feature));
     } catch (e) { /* ignore */ }
   }
-  // Applica lo stile di selezione (bordo nero, il fill LST resta invariato dal precedente setStyle)
   layer.setStyle(SELECTED_STYLE);
   if (layer.bringToFront) layer.bringToFront();
   state.selectedLayer = layer;
   state.selectedSez21 = sez;
   renderSectionInfo(feature);
+}
+
+// ---------- link download ----------
+function updateDownloadLinks(entry) {
+  const nameSlug = sanitizeName(entry.name);
+  const pdf = el('dlPdf');
+  const csv = el('dlCsv');
+
+  // I file sono attesi in reports/ nel repo. Se un giorno non li produci, i link
+  // restano puntati -> 404. Non facciamo probe HEAD per non generare rumore in rete.
+  pdf.setAttribute('href', `reports/report_${nameSlug}.pdf`);
+  csv.setAttribute('href', `reports/sezioni_${nameSlug}.csv`);
+  pdf.removeAttribute('aria-disabled');
+  csv.removeAttribute('aria-disabled');
+  pdf.setAttribute('download', `report_${nameSlug}.pdf`);
+  csv.setAttribute('download', `sezioni_${nameSlug}.csv`);
 }
 
 function setBasemap(key) {
@@ -388,7 +425,6 @@ function ensureLayerOrder() {
   if (state.tileLayer && state.tileLayer.bringToBack) state.tileLayer.bringToBack();
   if (state.tipoSLayer && state.tipoSLayer.bringToFront) state.tipoSLayer.bringToFront();
   if (state.lstLayer && state.lstLayer.bringToFront) state.lstLayer.bringToFront();
-  // La sezione selezionata resta in cima (bringToFront gia' fatto in selectSection)
   if (state.selectedLayer && state.selectedLayer.bringToFront) state.selectedLayer.bringToFront();
 }
 
@@ -398,7 +434,6 @@ function updateYearDisplay() {
   yv.textContent = YEARS_PARZIALI.has(y) ? `${y}*` : `${y}`;
   yv.classList.toggle('parziale', YEARS_PARZIALI.has(y));
 }
-
 function updateOpacityLabel() {
   el('opacityVal').textContent = `${el('opacitySlider').value}%`;
 }
@@ -409,7 +444,6 @@ function computeCurrentStyleParams() {
   const stat = currentStat();
   state.currentField = currentFieldKey();
 
-  // Break FISSI su tutti gli anni per la statistica corrente (stabilita' della legenda)
   const yearFields = entry.years.map(y => `${stat}_${y}`);
   const allYearsValues = [];
   for (const f of geojson.features) {
@@ -425,7 +459,6 @@ function computeCurrentStyleParams() {
 }
 
 async function refresh(reason) {
-  // reason: 'rebuild' -> ricostruzione completa; altrimenti fast setStyle
   const entry = state.manifest.comuni.find(c => c.code === el('comuneSelect').value);
   if (!entry) return;
 
@@ -437,6 +470,7 @@ async function refresh(reason) {
     state.currentEntry = entry;
     state.currentGeojson = await loadComune(entry);
     state.currentComuneCode = entry.code;
+    updateDownloadLinks(entry);
   }
 
   computeCurrentStyleParams();
@@ -446,7 +480,6 @@ async function refresh(reason) {
     || reason === 'rebuild';
 
   if (needRebuild) {
-    // La selezione punta a un layer che sta per essere distrutto
     clearSelection();
 
     if (state.lstLayer) { state.map.removeLayer(state.lstLayer); state.lstLayer = null; }
@@ -474,7 +507,7 @@ async function refresh(reason) {
           layer.setTooltipContent(`Sezione ${f.properties.SEZ21_ID ?? ''}${codShort}<br>${vLabel}`);
         });
         layer.on('click', (ev) => {
-          L.DomEvent.stopPropagation(ev);   // impedisce che il click bolla al map -> clearSelection
+          L.DomEvent.stopPropagation(ev);
           selectSection(layer, f);
         });
       },
@@ -483,9 +516,7 @@ async function refresh(reason) {
     state.currentTipoSVisible = tipoSVisible;
     ensureLayerOrder();
   } else {
-    // --- Fast path: solo restyle in-place ---
     if (state.lstLayer) state.lstLayer.setStyle(styleFeatureLST);
-    // Riapplica lo stile di selezione (che setStyle globale ha sovrascritto)
     if (state.selectedLayer) {
       state.selectedLayer.setStyle(SELECTED_STYLE);
       if (state.selectedLayer.bringToFront) state.selectedLayer.bringToFront();
@@ -569,7 +600,6 @@ async function init() {
   el('tipoSToggle').addEventListener('change', () => refresh('rebuild'));
   el('basemapSelect').addEventListener('change', () => setBasemap(el('basemapSelect').value));
 
-  // Click sul basemap (fuori dalle sezioni) -> deseleziona
   state.map.on('click', () => clearSelection());
 }
 init();
