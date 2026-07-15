@@ -397,77 +397,15 @@ function selectSection(layer, feature) {
   renderSectionInfo(feature);
 }
 
-// ---------- download CSV (generato lato client) ----------
-// Il report PDF e' stato rimosso. Il CSV delle sezioni con le temperature viene
-// costruito al volo dai dati gia' caricati (state.currentGeojson), quindi non serve
-// piu' la cartella reports/ ne' file pre-generati: funziona per qualsiasi comune.
-
-function csvEscape(v) {
-  if (v == null) return '';
-  const s = String(v);
-  return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-}
-
-// Costruisce il testo CSV di tutte le sezioni del comune, con le temperature LST
-// (min, media, mediana, max) per ogni anno disponibile.
-function buildSezioniCsv(entry, geojson) {
-  const stats = ['min', 'med', 'mdn', 'max'];       // ordine colonne temperature
-  const years = entry.years || [];
-  const header = [
-    'SEZ21_ID', 'PRO_COM', 'COD_TIPO_S', 'TIPO_S_DESC',
-    'MACRO_ID', 'MACRO_CLASSE', 'SHAPE_AREA_M2', 'POP21',
-  ];
-  for (const y of years) {
-    for (const s of stats) header.push(`LST_${s}_${y}`);
-  }
-
-  const lines = [header.join(',')];
-  for (const f of geojson.features) {
-    const p = f.properties;
-    const cod = p.COD_TIPO_S;
-    const macroId = macroForCodice(cod);
-    const row = [
-      p.SEZ21_ID ?? p.SEZ21 ?? '',
-      p.PRO_COM ?? entry.code ?? '',
-      cod ?? '',
-      cod == null || cod === '' ? '' : (COD_TIPO_S_LABEL[Number(cod)] ?? ''),
-      macroId,
-      nomeMacro(macroId),
-      p.SHAPE_AREA ?? '',
-      p.POP21 ?? '',
-    ];
-    for (const y of years) {
-      for (const s of stats) row.push(p[`${s}_${y}`] ?? '');
-    }
-    lines.push(row.map(csvEscape).join(','));
-  }
-  return lines.join('\r\n');
-}
-
+// ---------- link download CSV ----------
+// I CSV delle sezioni sono file statici serviti dal sito nella cartella csv_sezioni/.
+// Il nome file segue lo slug del comune (stessa sanitize del notebook Python).
 function updateDownloadLinks(entry) {
   const nameSlug = sanitizeName(entry.name);
   const csv = el('dlCsv');
-  const geojson = state.currentGeojson;
-
-  // Libera l'eventuale blob del comune precedente per non accumulare memoria.
-  if (csv._blobUrl) { URL.revokeObjectURL(csv._blobUrl); csv._blobUrl = null; }
-
-  if (!geojson || !geojson.features || !geojson.features.length) {
-    csv.setAttribute('aria-disabled', 'true');
-    csv.removeAttribute('href');
-    return;
-  }
-
-  const text = buildSezioniCsv(entry, geojson);
-  // BOM UTF-8 per far leggere correttamente gli accenti a Excel.
-  const blob = new Blob(['﻿' + text], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  csv._blobUrl = url;
-
-  csv.setAttribute('href', url);
+  csv.setAttribute('href', `csv_sezioni/sezioni_${nameSlug}.csv`);
   csv.setAttribute('download', `sezioni_${nameSlug}.csv`);
   csv.removeAttribute('aria-disabled');
-  csv.removeAttribute('target');   // il download deve avvenire nella stessa scheda
 }
 
 function setBasemap(key) {
