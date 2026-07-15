@@ -1,0 +1,53 @@
+COD_TIPO_S,id_macro,nome_macro,colore,razionale
+29,1,Hotspot commerciale/civico,#7f0000,Piazzale municipale/centri commerciali/logistica: massimo UHI reale.
+55,1,Hotspot commerciale/civico,#7f0000,Piazzale municipale/centri commerciali/logistica: massimo UHI reale.
+34,1,Hotspot commerciale/civico,#7f0000,Piazzale municipale/centri commerciali/logistica: massimo UHI reale.
+12,2,Impervio pesante urbano,#c0392b,"Attivita produttive, caserme, carceri, piazze monumentali. Superfici artificiali dominanti."
+24,2,Impervio pesante urbano,#c0392b,"Attivita produttive, caserme, carceri, piazze monumentali. Superfici artificiali dominanti."
+8,2,Impervio pesante urbano,#c0392b,"Attivita produttive, caserme, carceri, piazze monumentali. Superfici artificiali dominanti."
+4,2,Impervio pesante urbano,#c0392b,"Attivita produttive, caserme, carceri, piazze monumentali. Superfici artificiali dominanti."
+1,3,Tessuto urbano compatto,#e08a5b,Residenziale + scuole/universita/ospedali/musei/culto/aeroporti. Trama urbana media.
+37,3,Tessuto urbano compatto,#e08a5b,Residenziale + scuole/universita/ospedali/musei/culto/aeroporti. Trama urbana media.
+18,3,Tessuto urbano compatto,#e08a5b,Residenziale + scuole/universita/ospedali/musei/culto/aeroporti. Trama urbana media.
+2,3,Tessuto urbano compatto,#e08a5b,Residenziale + scuole/universita/ospedali/musei/culto/aeroporti. Trama urbana media.
+7,3,Tessuto urbano compatto,#e08a5b,Residenziale + scuole/universita/ospedali/musei/culto/aeroporti. Trama urbana media.
+31,3,Tessuto urbano compatto,#e08a5b,Residenziale + scuole/universita/ospedali/musei/culto/aeroporti. Trama urbana media.
+9,3,Tessuto urbano compatto,#e08a5b,Residenziale + scuole/universita/ospedali/musei/culto/aeroporti. Trama urbana media.
+33,4,Tessuto misto/lineari,#d5b895,"Rifiuti, sport, energia, ferrovia, porto, strade, monumenti, cinema. Mix costruito+aperto."
+16,4,Tessuto misto/lineari,#d5b895,"Rifiuti, sport, energia, ferrovia, porto, strade, monumenti, cinema. Mix costruito+aperto."
+30,4,Tessuto misto/lineari,#d5b895,"Rifiuti, sport, energia, ferrovia, porto, strade, monumenti, cinema. Mix costruito+aperto."
+10,4,Tessuto misto/lineari,#d5b895,"Rifiuti, sport, energia, ferrovia, porto, strade, monumenti, cinema. Mix costruito+aperto."
+6,4,Tessuto misto/lineari,#d5b895,"Rifiuti, sport, energia, ferrovia, porto, strade, monumenti, cinema. Mix costruito+aperto."
+36,4,Tessuto misto/lineari,#d5b895,"Rifiuti, sport, energia, ferrovia, porto, strade, monumenti, cinema. Mix costruito+aperto."
+3,4,Tessuto misto/lineari,#d5b895,"Rifiuti, sport, energia, ferrovia, porto, strade, monumenti, cinema. Mix costruito+aperto."
+53,4,Tessuto misto/lineari,#d5b895,"Rifiuti, sport, energia, ferrovia, porto, strade, monumenti, cinema. Mix costruito+aperto."
+15,5,Verde intra-urbano+strutture,#9dc47f,"Cimiteri, incolto, depuratori, parchi urbani, impianti idrici, strutture ricettive."
+79,5,Verde intra-urbano+strutture,#9dc47f,"Cimiteri, incolto, depuratori, parchi urbani, impianti idrici, strutture ricettive."
+50,5,Verde intra-urbano+strutture,#9dc47f,"Cimiteri, incolto, depuratori, parchi urbani, impianti idrici, strutture ricettive."
+5,5,Verde intra-urbano+strutture,#9dc47f,"Cimiteri, incolto, depuratori, parchi urbani, impianti idrici, strutture ricettive."
+60,5,Verde intra-urbano+strutture,#9dc47f,"Cimiteri, incolto, depuratori, parchi urbani, impianti idrici, strutture ricettive."
+25,5,Verde intra-urbano+strutture,#9dc47f,"Cimiteri, incolto, depuratori, parchi urbani, impianti idrici, strutture ricettive."
+26,6,Agricoltura estensiva urbana,#e8c94d,Aree agricole/frutteti/ville monumentali (con parchi periurbani).
+63,6,Agricoltura estensiva urbana,#e8c94d,Aree agricole/frutteti/ville monumentali (con parchi periurbani).
+35,6,Agricoltura estensiva urbana,#e8c94d,Aree agricole/frutteti/ville monumentali (con parchi periurbani).
+21,7,Colture arboree e cave,#c8a35b,"Cave, viti, olivi, colture permanenti secche."
+66,7,Colture arboree e cave,#c8a35b,"Cave, viti, olivi, colture permanenti secche."
+65,7,Colture arboree e cave,#c8a35b,"Cave, viti, olivi, colture permanenti secche."
+64,7,Colture arboree e cave,#c8a35b,"Cave, viti, olivi, colture permanenti secche."
+69,8,Vegetaz. rada + acqua,#5ab3a0,"Cespuglieto, praterie temporanee, litorale non balneare, acque interne."
+62,8,Vegetaz. rada + acqua,#5ab3a0,"Cespuglieto, praterie temporanee, litorale non balneare, acque interne."
+56,8,Vegetaz. rada + acqua,#5ab3a0,"Cespuglieto, praterie temporanee, litorale non balneare, acque interne."
+23,8,Vegetaz. rada + acqua,#5ab3a0,"Cespuglieto, praterie temporanee, litorale non balneare, acque interne."
+68,9,Naturale non-urbano,#0f6b3d,"Pascolo/alpeggio, rocce nude, bosco."
+28,9,Naturale non-urbano,#0f6b3d,"Pascolo/alpeggio, rocce nude, bosco."
+22,9,Naturale non-urbano,#0f6b3d,"Pascolo/alpeggio, rocce nude, bosco."
+61,10,Risaia,#2166ac,Coltura allagata: firma termica da corpo idrico.
+27,0,Escluso (residuale),#cccccc,Codici marginali o poco frequenti.
+99,0,Escluso (residuale),#cccccc,Codici marginali o poco frequenti.
+81,0,Escluso (residuale),#cccccc,Codici marginali o poco frequenti.
+32,0,Escluso (residuale),#cccccc,Codici marginali o poco frequenti.
+78,0,Escluso (residuale),#cccccc,Codici marginali o poco frequenti.
+19,0,Escluso (residuale),#cccccc,Codici marginali o poco frequenti.
+20,0,Escluso (residuale),#cccccc,Codici marginali o poco frequenti.
+100,0,Escluso (residuale),#cccccc,Codici marginali o poco frequenti.
+80,0,Escluso (residuale),#cccccc,Codici marginali o poco frequenti.
