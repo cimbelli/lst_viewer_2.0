@@ -28,34 +28,33 @@ const ORDINE_REGIONI = [
   "Campania", "Puglia", "Basilicata", "Calabria", "Sicilia", "Sardegna"
 ];
 
-// --- Tassonomia macro v3 (10 classi + escluso) ---
+// --- Tassonomia macro v4 (10 classi + escluso) ---
 const TIPO_S_MACRO = [
-  { id: 1,  nome: 'Tessuto urbano continuo',    colore: '#c0392b' },
-  { id: 2,  nome: 'Superficie impervia pesante',colore: '#7f0000' },
-  { id: 3,  nome: 'Rete infrastrutturale',      colore: '#212121' },
-  { id: 4,  nome: 'Superficie minerale nuda',   colore: '#8b7355' },
-  { id: 5,  nome: 'Edifici pubblici e servizi', colore: '#e08a5b' },
-  { id: 6,  nome: 'Impianti sportivi',          colore: '#c39bd3' },
-  { id: 7,  nome: 'Verde urbano',               colore: '#27ae60' },
-  { id: 8,  nome: 'Vegetazione naturale',       colore: '#0f6b3d' },
-  { id: 9,  nome: 'Colture agricole',           colore: '#f4d35e' },
-  { id: 10, nome: 'Acqua e zone umide',         colore: '#2166ac' },
-  { id: 0,  nome: 'Escluso/residuale',          colore: '#cccccc' },
+  { id: 1, nome: 'Hotspot commerciale/civico', colore: '#7f0000' },
+  { id: 2, nome: 'Impervio pesante urbano', colore: '#c0392b' },
+  { id: 3, nome: 'Tessuto urbano compatto', colore: '#e08a5b' },
+  { id: 4, nome: 'Tessuto misto/lineari', colore: '#d5b895' },
+  { id: 5, nome: 'Verde intra-urbano+strutture', colore: '#9dc47f' },
+  { id: 6, nome: 'Agricoltura estensiva urbana', colore: '#e8c94d' },
+  { id: 7, nome: 'Colture arboree e cave', colore: '#c8a35b' },
+  { id: 8, nome: 'Vegetaz. rada + acqua', colore: '#5ab3a0' },
+  { id: 9, nome: 'Naturale non-urbano', colore: '#0f6b3d' },
+  { id: 10, nome: 'Risaia', colore: '#2166ac' },
+  { id: 0, nome: 'Escluso (residuale)', colore: '#cccccc' },
 ];
 
 const TIPO_S_TO_MACRO = {
-  1: 1,
-  12: 2, 34: 2, 55: 2,
-  6: 3, 7: 3, 10: 3, 36: 3,
-  21: 4, 28: 4, 79: 4,
-  2: 5, 3: 5, 4: 5, 8: 5, 9: 5, 15: 5, 18: 5, 24: 5, 25: 5, 29: 5,
-  30: 5, 31: 5, 32: 5, 33: 5, 35: 5, 37: 5, 50: 5, 53: 5, 60: 5, 78: 5,
-  16: 6,
-  5: 7,
-  22: 8, 69: 8,
-  26: 9, 61: 9, 62: 9, 63: 9, 64: 9, 65: 9, 66: 9, 68: 9, 81: 9,
-  23: 10, 56: 10, 80: 10,
-  19: 0, 20: 0, 27: 0, 99: 0, 100: 0,
+  29: 1, 34: 1, 55: 1,
+  4: 2, 8: 2, 12: 2, 24: 2,
+  1: 3, 2: 3, 7: 3, 9: 3, 18: 3, 31: 3, 37: 3,
+  3: 4, 6: 4, 10: 4, 16: 4, 30: 4, 33: 4, 36: 4, 53: 4,
+  5: 5, 15: 5, 25: 5, 50: 5, 60: 5, 79: 5,
+  26: 6, 35: 6, 63: 6,
+  21: 7, 64: 7, 65: 7, 66: 7,
+  23: 8, 56: 8, 62: 8, 69: 8,
+  22: 9, 28: 9, 68: 9,
+  61: 10,
+  19: 0, 20: 0, 27: 0, 32: 0, 78: 0, 80: 0, 81: 0, 99: 0, 100: 0,
 };
 
 const COD_TIPO_S_LABEL = {
